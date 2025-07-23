@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA Claim Site</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <img src="nova-banner.png" alt="NOVA Banner" />
+
+    <h1>NOVA</h1>
+    <h2>A digital coin owned by everyone.</h2>
+    <p>Start by connecting your wallet.</p>
+    <h3>Phase 0: 1,000 NOVA per claim</h3>
+    <p>Ends after 100,000 coins</p>
+
+    <div class="buttons">
+      <button id="connectWalletButton">Connect Wallet</button>
+      <button id="claimButton" disabled>Claim</button>
+    </div>
+
+    <p id="status"></p>
+  </div>
+
+  <!-- 🔥 THIS IS THE MISSING LINE -->
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
