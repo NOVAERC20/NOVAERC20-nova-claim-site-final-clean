@@ -14,7 +14,7 @@ const abi = [
   }
 ];
 
-const contractAddress = "0x93f195aC9fe71994487B18b065d80021C14eBcd5";
+const contractAddress = "0xe3d931336f6528246349f9ce6db6F7e20C0c58b8";
 
 connectWalletButton.addEventListener("click", async () => {
   if (typeof window.ethereum === "undefined") {
