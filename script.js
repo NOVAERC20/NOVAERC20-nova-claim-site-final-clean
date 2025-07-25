@@ -14,7 +14,7 @@ const abi = [
   }
 ];
 
-const contractAddress = "0xF94AF881E98B63FF51af70869907672eb4CC37a9";
+const contractAddress = "0xF94AFB81E9B863F51fa7B069907672eb4CC37a9";
 
 connectWalletButton.addEventListener("click", async () => {
   if (typeof window.ethereum === "undefined") {
@@ -39,7 +39,10 @@ claimButton.addEventListener("click", async () => {
   const contract = new web3.eth.Contract(abi, contractAddress);
 
   try {
-    await contract.methods.claim().send({ from: account });
+    await contract.methods.claim().send({
+      from: account,
+      gas: 30000  // 🛠️ Manual gas limit for mobile fix
+    });
     status.textContent = "Claim successful!";
   } catch (err) {
     status.textContent = "Claim failed.";
