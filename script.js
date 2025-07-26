@@ -1,47 +1,67 @@
-
-async function claimNOVA() {
-  const status = document.getElementById("status");
-  if (typeof window.ethereum === "undefined") {
-    status.textContent = "❌ MetaMask not found. Please install it.";
-    return;
+let web3;
+let contract;
+const contractAddress = '0xe3d931336f6528246349f9ce6db6F7e20C0c58b8';
+const abi = [
+  {
+    "inputs": [],
+    "name": "claim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
+];
 
-  const web3 = new Web3(window.ethereum);
-  await window.ethereum.request({ method: "eth_requestAccounts" });
-  const accounts = await web3.eth.getAccounts();
-  const account = accounts[0];
+window.addEventListener('load', async () => {
+  if (typeof window.ethereum !== 'undefined') {
+    console.log('✅ Ethereum provider detected');
 
-  const contract = new web3.eth.Contract(abi, contractAddress);
+    // Load Web3 and contract AFTER wallet connects
+    web3 = new Web3(window.ethereum);
+    contract = new web3.eth.Contract(abi, contractAddress);
 
-  status.textContent = "📤 Sending transaction...";
+    const connectButton = document.getElementById('connectWalletButton');
+    const claimButton = document.getElementById('claimButton');
 
-  contract.methods.claim().send({ from: account })
-    .on("transactionHash", function(hash) {
-      console.log("📦 TX Hash:", hash);
-      status.textContent = `📦 TX Sent: ${hash}`;
-    })
-    .on("receipt", function(receipt) {
-      console.log("✅ Claim Success:", receipt);
-      status.textContent = "✅ Claim successful!";
-    })
-    .on("error", function(error) {
-      console.error("❌ Claim failed:", error.message || error);
-      status.textContent = "❌ Claim failed. See console for details.";
+    connectButton.addEventListener('click', async () => {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const userAddress = accounts[0];
+        connectButton.innerText = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+        console.log('🔗 Wallet connected:', userAddress);
+      } catch (err) {
+        console.error('❌ Wallet connection failed:', err);
+        alert('Failed to connect wallet.');
+      }
     });
-}
 
-document.getElementById("connectWalletButton").addEventListener("click", async () => {
-  if (typeof window.ethereum !== "undefined") {
-    try {
-      await window.ethereum.request({ method: "eth_requestAccounts" });
-      document.getElementById("status").textContent = "✅ Wallet connected";
-    } catch (error) {
-      console.error("Connection rejected:", error.message || error);
-      document.getElementById("status").textContent = "❌ Connection rejected";
-    }
+    claimButton.addEventListener('click', async () => {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const userAddress = accounts[0];
+
+        // Estimate gas (safely, mobile-friendly)
+        const gasEstimate = await contract.methods.claim().estimateGas({ from: userAddress });
+
+        // Send transaction
+        const tx = await contract.methods.claim().send({
+          from: userAddress,
+          gas: gasEstimate
+        });
+
+        console.log('✅ Claim successful:', tx);
+        alert('✅ NOVA claimed successfully!');
+      } catch (err) {
+        console.error('❌ Claim failed:', err);
+        if (err.message?.includes('User denied')) {
+          alert('Transaction cancelled.');
+        } else {
+          alert('❌ Claim failed. See console for details.');
+        }
+      }
+    });
+
   } else {
-    document.getElementById("status").textContent = "❌ MetaMask not found";
+    alert('⚠️ No Web3 wallet detected. Please open this site in MetaMask or Base Wallet.');
+    console.warn('❌ No Ethereum provider found.');
   }
 });
-
-document.getElementById("claimButton").addEventListener("click", claimNOVA);
