@@ -28,6 +28,10 @@ window.addEventListener('load', async () => {
         const userAddress = accounts[0];
         connectButton.innerText = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
         console.log('🔗 Wallet connected:', userAddress);
+
+        // ✅ Enable claim button now that wallet is connected
+        claimButton.disabled = false;
+
       } catch (err) {
         console.error('❌ Wallet connection failed:', err);
         alert('Failed to connect wallet.');
