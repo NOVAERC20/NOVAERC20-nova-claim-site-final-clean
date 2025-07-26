@@ -1,9 +1,6 @@
 
 async function claimNOVA() {
   const status = document.getElementById("status");
-  const connectButton = document.getElementById("connectWalletButton");
-  const claimButton = document.getElementById("claimButton");
-
   if (typeof window.ethereum === "undefined") {
     status.textContent = "❌ MetaMask not found. Please install it.";
     return;
@@ -11,22 +8,10 @@ async function claimNOVA() {
 
   const web3 = new Web3(window.ethereum);
   await window.ethereum.request({ method: "eth_requestAccounts" });
-
   const accounts = await web3.eth.getAccounts();
   const account = accounts[0];
 
   const contract = new web3.eth.Contract(abi, contractAddress);
-
-  status.textContent = "🔍 Checking eligibility...";
-
-  try {
-    const isEligible = await contract.methods.claim().call({ from: account });
-    console.log("✅ Simulation succeeded. Proceeding to send TX.");
-  } catch (error) {
-    console.error("❌ Simulation failed. Likely already claimed or not eligible.", error);
-    status.textContent = "❌ Claim not allowed. Possibly already claimed.";
-    return;
-  }
 
   status.textContent = "📤 Sending transaction...";
 
@@ -40,9 +25,23 @@ async function claimNOVA() {
       status.textContent = "✅ Claim successful!";
     })
     .on("error", function(error) {
-      console.error("❌ Claim failed:", error);
+      console.error("❌ Claim failed:", error.message || error);
       status.textContent = "❌ Claim failed. See console for details.";
     });
 }
+
+document.getElementById("connectWalletButton").addEventListener("click", async () => {
+  if (typeof window.ethereum !== "undefined") {
+    try {
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      document.getElementById("status").textContent = "✅ Wallet connected";
+    } catch (error) {
+      console.error("Connection rejected:", error.message || error);
+      document.getElementById("status").textContent = "❌ Connection rejected";
+    }
+  } else {
+    document.getElementById("status").textContent = "❌ MetaMask not found";
+  }
+});
 
 document.getElementById("claimButton").addEventListener("click", claimNOVA);
