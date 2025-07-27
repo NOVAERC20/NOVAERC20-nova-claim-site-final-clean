@@ -1,40 +1,47 @@
-let provider;
-let signer;
-let contract;
+const connectWalletButton = document.getElementById("connectWalletButton");
+const claimButton = document.getElementById("claimButton");
+const status = document.getElementById("status");
 
-const CONTRACT_ADDRESS = "0xe3d931336f6528246349f9ce6db6F7e20C0c58b8";
-const ABI = [{
-  "inputs": [],
-  "name": "claim",
-  "outputs": [],
-  "stateMutability": "nonpayable",
-  "type": "function"
-}];
+let account;
 
-async function connectWallet() {
-  if (window.ethereum) {
-    provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    signer = await provider.getSigner();
-    document.getElementById("walletAddress").innerText = (await signer.getAddress()).slice(0, 6) + "..." + (await signer.getAddress()).slice(-4);
-    document.getElementById("status").innerText = "Wallet connected ✅";
-    document.getElementById("claimButton").disabled = false;
-    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-  } else {
-    alert("MetaMask not detected. Please install it.");
+const abi = [
+  {
+    "inputs": [],
+    "name": "claim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
-}
+];
 
-async function claimTokens() {
+const contractAddress = "0xF94AF881E98B63FF51af70869907672eb4CC37a9";
+
+connectWalletButton.addEventListener("click", async () => {
+  if (typeof window.ethereum === "undefined") {
+    status.textContent = "MetaMask not found.";
+    return;
+  }
+
   try {
-    const tx = await contract.claim();
-    document.getElementById("status").innerText = "Transaction sent. Waiting for confirmation...";
-    await tx.wait();
-    document.getElementById("status").innerText = "✅ Claim successful!";
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    account = accounts[0];
+    status.textContent = `Connected: ${account}`;
+    claimButton.disabled = false;
   } catch (err) {
-    document.getElementById("status").innerText = "❌ Claim failed: " + (err?.reason || err?.message || "Unknown error");
+    status.textContent = "Connection failed.";
   }
-}
+});
 
-document.getElementById("connectWallet").addEventListener("click", connectWallet);
-document.getElementById("claimButton").addEventListener("click", claimTokens);
+claimButton.addEventListener("click", async () => {
+  if (!account) return;
+
+  const web3 = new Web3(window.ethereum);
+  const contract = new web3.eth.Contract(abi, contractAddress);
+
+  try {
+    await contract.methods.claim().send({ from: account });
+    status.textContent = "Claim successful!";
+  } catch (err) {
+    status.textContent = "Claim failed.";
+  }
+});

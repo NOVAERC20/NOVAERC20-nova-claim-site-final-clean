@@ -1,33 +1,74 @@
 body {
-  font-family: sans-serif;
-  background: #fefcf6;
-  color: #222;
+  font-family: Arial, sans-serif;
+  background-color: #fdfbf6; /* Your cream tone */
   text-align: center;
+  padding: 20px;
   margin: 0;
-  padding: 2rem;
 }
+
 .container {
   max-width: 600px;
-  margin: auto;
+  margin: 0 auto;
 }
-.claim-box {
-  margin-top: 2rem;
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto 20px auto;
 }
+
+h1 {
+  font-size: 2.5rem;
+  margin: 0.5em 0 0.2em;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin: 0.2em 0;
+  font-weight: 500;
+}
+
+p {
+  font-size: 1.1rem;
+  margin: 0.5em 0;
+}
+
+h3 {
+  font-size: 1.2rem;
+  margin-top: 1em;
+  font-weight: 600;
+}
+
+.buttons {
+  margin-top: 30px;
+}
+
 button {
-  padding: 10px 20px;
-  font-size: 16px;
-  margin: 0.5rem;
+  padding: 12px 20px;
+  font-size: 1rem;
+  margin: 0 10px;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
 }
-#claimButton:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
+
 #connectWallet {
-  background: #007bff;
+  background-color: #007bff;
   color: white;
 }
+
 #claimButton {
-  background: #007bff;
+  background-color: #ccc;
   color: white;
+}
+
+#claimButton:enabled {
+  background-color: #007bff;
+}
+
+#status {
+  margin-top: 20px;
+  font-size: 1rem;
+  color: #333;
 }
