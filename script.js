@@ -1,47 +1,31 @@
-const connectWalletButton = document.getElementById("connectWalletButton");
-const claimButton = document.getElementById("claimButton");
-const status = document.getElementById("status");
+let web3;
+let contract;
+const contractAddress = '0xf94AF...C37a9'; // Replace with actual contract address
 
-let account;
-
-const abi = [
-  {
-    "inputs": [],
-    "name": "claim",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-];
-
-const contractAddress = "0xF94AF881E98B63FF51af70869907672eb4CC37a9";
-
-connectWalletButton.addEventListener("click", async () => {
-  if (typeof window.ethereum === "undefined") {
-    status.textContent = "MetaMask not found.";
-    return;
-  }
-
-  try {
-    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-    account = accounts[0];
-    status.textContent = `Connected: ${account}`;
-    claimButton.disabled = false;
-  } catch (err) {
-    status.textContent = "Connection failed.";
+window.addEventListener('load', async () => {
+  if (window.ethereum) {
+    web3 = new Web3(window.ethereum);
+    try {
+      await ethereum.request({ method: 'eth_requestAccounts' });
+      const accounts = await web3.eth.getAccounts();
+      document.getElementById("connectWalletButton").innerText = "Connected: " + accounts[0];
+      contract = new web3.eth.Contract(contractABI, contractAddress);
+      document.getElementById("claimButton").disabled = false;
+    } catch (error) {
+      console.error("User denied wallet connection");
+    }
+  } else {
+    alert("Please install MetaMask to use this dApp!");
   }
 });
 
-claimButton.addEventListener("click", async () => {
-  if (!account) return;
-
-  const web3 = new Web3(window.ethereum);
-  const contract = new web3.eth.Contract(abi, contractAddress);
-
+document.getElementById("claimButton").addEventListener("click", async () => {
+  const accounts = await web3.eth.getAccounts();
   try {
-    await contract.methods.claim().send({ from: account });
-    status.textContent = "Claim successful!";
+    const gas = await contract.methods.claim().estimateGas({ from: accounts[0] });
+    contract.methods.claim().send({ from: accounts[0], gas });
   } catch (err) {
-    status.textContent = "Claim failed.";
+    console.error("Claim failed:", err);
+    document.getElementById("status").innerText = "Claim failed.";
   }
 });
