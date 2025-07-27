@@ -1,5 +1,5 @@
 
-const contractABI = [
+const abi = [
   {
     "inputs": [],
     "name": "claim",
