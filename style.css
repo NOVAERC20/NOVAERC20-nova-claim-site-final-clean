@@ -1,74 +1,12 @@
+
 body {
   font-family: Arial, sans-serif;
-  background-color: #fdfbf6; /* Your cream tone */
+  background: #fefdf8;
   text-align: center;
-  padding: 20px;
-  margin: 0;
+  padding-top: 50px;
 }
-
-.container {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto 20px auto;
-}
-
-h1 {
-  font-size: 2.5rem;
-  margin: 0.5em 0 0.2em;
-}
-
-h2 {
-  font-size: 1.5rem;
-  margin: 0.2em 0;
-  font-weight: 500;
-}
-
-p {
-  font-size: 1.1rem;
-  margin: 0.5em 0;
-}
-
-h3 {
-  font-size: 1.2rem;
-  margin-top: 1em;
-  font-weight: 600;
-}
-
-.buttons {
-  margin-top: 30px;
-}
-
 button {
-  padding: 12px 20px;
-  font-size: 1rem;
-  margin: 0 10px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-#connectWallet {
-  background-color: #007bff;
-  color: white;
-}
-
-#claimButton {
-  background-color: #ccc;
-  color: white;
-}
-
-#claimButton:enabled {
-  background-color: #007bff;
-}
-
-#status {
-  margin-top: 20px;
-  font-size: 1rem;
-  color: #333;
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
 }
