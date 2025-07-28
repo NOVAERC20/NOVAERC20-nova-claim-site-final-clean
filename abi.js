@@ -1,1 +1,9 @@
-const contractABI = [ /* Your ABI goes here */ ];
+const abi = [
+  {
+    "inputs": [],
+    "name": "claim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];

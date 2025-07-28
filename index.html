@@ -3,26 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NOVA Claim Site</title>
+  <title>NOVA Claim</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <img src="nova-banner.png" alt="NOVA Banner" />
-    <h3>Phase 0: 1,000 NOVA per claim</h3>
-    <p>Ends after 100,000 coins</p>
-    <div class="buttons">
-      <button id="connectWalletButton">Connect Wallet</button>
-      <button id="claimButton" disabled>Claim</button>
-    </div>
+    <h1>Claim Your NOVA</h1>
+    <button id="connectWalletBtn">Connect Wallet</button>
+    <p id="walletAddress"></p>
+    <button id="claimBtn">Claim</button>
     <p id="status"></p>
   </div>
 
-  <!-- 🔥 THIS IS THE MISSING LINE -->
+  <!-- Scripts ordered correctly -->
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
   <script src="abi.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
   <script>eruda.init();</script>
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
