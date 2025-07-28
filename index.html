@@ -1,17 +1,27 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>NOVA Claim</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <script src="abi.js" defer></script>
-  <script src="script.js" defer></script>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA Claim Site</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>Phase 0: 1,000 NOVA per claim</h2>
-  <button id="connectWallet">Connect Wallet</button>
-  <button id="claimBtn">Claim</button>
-  <p id="walletAddress">Not connected</p>
+  <div class="container">
+    <img src="nova-banner.png" alt="NOVA Banner" />
+    <h3>Phase 0: 1,000 NOVA per claim</h3>
+    <p>Ends after 100,000 coins</p>
+
+    <div class="buttons">
+      <button id="connectWalletButton">Connect Wallet</button>
+      <button id="claimButton" disabled>Claim</button>
+    </div>
+
+    <p id="status"></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="abi.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

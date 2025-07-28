@@ -1,45 +1,48 @@
+let account;
 
-async function connectWallet() {
-  if (window.ethereum) {
-    try {
-      await window.ethereum.request({ method: "eth_requestAccounts" });
-      window.web3 = new Web3(window.ethereum);
-      const accounts = await web3.eth.getAccounts();
-      window.account = accounts[0];
-      document.getElementById("walletAddress").innerText = "Connected: " + window.account;
-    } catch (error) {
-      alert("Wallet connection failed.");
-    }
-  } else {
-    alert("MetaMask not found.");
+async function waitForEthereum(timeout = 3000) {
+  const started = Date.now();
+  while (!window.ethereum && Date.now() - started < timeout) {
+    await new Promise(res => setTimeout(res, 50));
+  }
+  if (!window.ethereum) {
+    throw new Error("MetaMask not found. Please use a Web3-enabled browser.");
   }
 }
 
-document.getElementById("connectWallet").onclick = connectWallet;
+document.addEventListener("DOMContentLoaded", async () => {
+  const connectWalletButton = document.getElementById("connectWalletButton");
+  const claimButton = document.getElementById("claimButton");
+  const status = document.getElementById("status");
 
-document.getElementById("claimBtn").onclick = async function () {
-  try {
-    if (!window.web3 || !window.account) {
-      alert("Please connect your wallet first.");
-      return;
+  connectWalletButton.onclick = async () => {
+    try {
+      await waitForEthereum();
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      account = accounts[0];
+      status.textContent = "Connected: " + account;
+      claimButton.disabled = false;
+    } catch (err) {
+      status.textContent = "Wallet connection failed.";
     }
+  };
 
-    const contractAddress = "0xe3d931336f6528246349f9ce6db6F7e20C0c58b8";
-    const contract = new web3.eth.Contract(abi, contractAddress);
-
-    const gas = await contract.methods.claim().estimateGas({ from: window.account }).catch(() => 150000);
-
-    const tx = {
-      from: window.account,
-      to: contractAddress,
-      data: contract.methods.claim().encodeABI(),
-      gas
-    };
-
-    const txHash = await web3.eth.sendTransaction(tx);
-    alert("Claim sent successfully! Transaction: " + txHash.transactionHash);
-  } catch (e) {
-    alert("Error: " + e.message);
-    console.error(e);
-  }
-};
+  claimButton.onclick = async () => {
+    if (!account) return;
+    try {
+      const web3 = new Web3(window.ethereum);
+      const contract = new web3.eth.Contract(abi, "0xF94AF881E98B63FF51af70869907672eb4CC37a9");
+      let gas;
+      try {
+        gas = await contract.methods.claim().estimateGas({ from: account });
+      } catch (e) {
+        gas = 200000;
+        status.textContent = "Gas estimate failed. Using fallback.";
+      }
+      await contract.methods.claim().send({ from: account, gas });
+      status.textContent = "Claim successful!";
+    } catch (err) {
+      status.textContent = "Claim failed: " + (err.message || err);
+    }
+  };
+});

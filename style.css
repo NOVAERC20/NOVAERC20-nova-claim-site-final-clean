@@ -1,12 +1,63 @@
-
 body {
   font-family: Arial, sans-serif;
-  background: #fefdf8;
+  background-color: #fdfbf6;
   text-align: center;
-  padding-top: 50px;
+  padding: 20px;
+  margin: 0;
 }
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto 20px auto;
+}
+
+h3 {
+  font-size: 1.2rem;
+  margin-top: 1em;
+  font-weight: 600;
+}
+
+p {
+  font-size: 1.1rem;
+  margin: 0.5em 0;
+}
+
+.buttons {
+  margin-top: 30px;
+}
+
 button {
-  margin: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  margin: 0 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#connectWalletButton {
+  background-color: #007bff;
+  color: white;
+}
+
+#claimButton {
+  background-color: #ccc;
+  color: white;
+}
+
+#claimButton:enabled {
+  background-color: #007bff;
+}
+
+#status {
+  margin-top: 20px;
+  font-size: 1rem;
+  color: #333;
 }
