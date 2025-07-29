@@ -10,7 +10,7 @@ async function waitForEthereum(timeout = 3000) {
     await new Promise(res => setTimeout(res, 50));
   }
   if (!window.ethereum) {
-    throw new Error("MetaMask not found. Please use a Web3-enabled browser.");
+    throw new Error("Ethereum provider not found. Please open in MetaMask/Base.");
   }
 }
 
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     web3 = new Web3(window.ethereum);
     contract = new web3.eth.Contract(abi, contractAddress);
   } catch (err) {
-    status.textContent = "Ethereum provider not found.";
+    status.textContent = "No Ethereum wallet detected.";
     console.error(err);
     return;
   }
@@ -33,17 +33,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
       account = accounts[0];
-      status.textContent = "Connected: " + account;
+      status.textContent = `Connected: ${account}`;
       claimButton.disabled = false;
     } catch (err) {
       status.textContent = "Wallet connection failed.";
-      console.error(err);
+      console.error("Connection error:", err);
     }
   };
 
   claimButton.onclick = async () => {
     if (!account) {
-      status.textContent = "Please connect your wallet first.";
+      status.textContent = "Connect your wallet first.";
       return;
     }
 
@@ -56,40 +56,39 @@ document.addEventListener("DOMContentLoaded", async () => {
         gas = await contract.methods.claim().estimateGas({ from: account });
       } catch (err) {
         gas = 200000;
-        status.textContent = "Gas estimate failed. Using fallback.";
         console.warn("Gas estimate failed:", err);
+        status.textContent = "Gas estimate failed. Using fallback.";
       }
 
-      let txParams = { from: account, gas, to: contractAddress, data: contract.methods.claim().encodeABI() };
+      let txParams = { from: account, gas };
       try {
-        const feeData = await web3.eth.getBlock("latest");
-        if (feeData.baseFeePerGas) {
-          // Use BigInt for gas calculations
-          txParams.maxFeePerGas = (BigInt(feeData.baseFeePerGas) * 2n).toString();
-          txParams.maxPriorityFeePerGas = web3.utils.toWei("1.5", "gwei");
+        const block = await web3.eth.getBlock("latest");
+        if (block.baseFeePerGas) {
+          txParams.maxFeePerGas = (BigInt(block.baseFeePerGas) * 2n).toString();
+          txParams.maxPriorityFeePerGas = web3.utils.toWei("2", "gwei");
         } else {
           txParams.gasPrice = await web3.eth.getGasPrice();
         }
-      } catch (e) {
+      } catch (feeErr) {
+        console.warn("EIP-1559 fee fetch failed:", feeErr);
         txParams.gasPrice = await web3.eth.getGasPrice();
-        console.warn("EIP-1559 fee fields error, fallback to gasPrice", e);
       }
 
-      await web3.eth.sendTransaction(txParams)
+      await contract.methods.claim().send(txParams)
         .on("transactionHash", hash => {
-          status.textContent = "Transaction sent: " + hash;
+          status.textContent = `Transaction sent: ${hash}`;
         })
         .on("receipt", receipt => {
-          status.textContent = "Claim successful!";
+          status.textContent = "✅ Claim successful!";
         })
         .on("error", err => {
-          status.textContent = "Claim failed: " + (err.message || err);
-          console.error(err);
+          status.textContent = `❌ Claim failed: ${err.message || err}`;
+          console.error("Claim error:", err);
         });
 
     } catch (err) {
-      status.textContent = "Error: " + (err.message || err);
-      console.error(err);
+      status.textContent = `Error: ${err.message || err}`;
+      console.error("General error:", err);
     } finally {
       claimButton.disabled = false;
     }
