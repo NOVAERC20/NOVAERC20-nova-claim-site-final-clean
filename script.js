@@ -1,8 +1,21 @@
 let account;
 let web3;
 let contract;
-const CONTRACT_ADDRESS = "0xF94AF881E98B63FF51af70869907672eb4CC37a9"; // Replace if different
 
+const CONTRACT_ADDRESS = "0xF94AF881E98B63FF51af70869907672eb4CC37a9"; // NOVA Claim Contract
+
+// Minimal ABI for claim()
+const abi = [
+  {
+    "inputs": [],
+    "name": "claim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];
+
+// Debug logging to status div
 function debugLog(msg) {
   const status = document.getElementById("status");
   status.textContent += `\n${msg}`;
@@ -20,7 +33,9 @@ window.addEventListener('load', () => {
       return;
     }
 
-    debugLog(`✅ Provider detected: ${window.ethereum.isMetaMask ? "MetaMask" : window.ethereum.isCoinbaseWallet ? "Base Wallet" : "Other"}`);
+    const providerType = window.ethereum.isMetaMask ? "MetaMask" :
+                         window.ethereum.isCoinbaseWallet ? "Base Wallet" : "Other";
+    debugLog(`✅ Provider detected: ${providerType}`);
 
     try {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -32,6 +47,7 @@ window.addEventListener('load', () => {
       debugLog(`🌐 Chain ID: ${chainId}`);
 
       contract = new web3.eth.Contract(abi, CONTRACT_ADDRESS);
+      debugLog("📄 Contract initialized.");
 
       document.getElementById("claimButton").disabled = false;
     } catch (err) {
@@ -48,24 +64,44 @@ window.addEventListener('load', () => {
     debugLog("🚀 Claim button clicked. Preparing transaction...");
 
     try {
-      let gas;
+      let gasEstimate;
       try {
-        gas = await contract.methods.claim().estimateGas({ from: account });
-      } catch {
-        gas = 200000;
-        debugLog("⚠️ Gas estimate failed. Using fallback.");
+        gasEstimate = await contract.methods.claim().estimateGas({ from: account });
+        debugLog(`✅ Gas estimate: ${gasEstimate}`);
+      } catch (err) {
+        gasEstimate = 200000;
+        debugLog(`⚠️ Gas estimate failed. Using fallback: ${err.message}`);
       }
 
-      const tx = await contract.methods.claim().send({
-        from: account,
-        gas,
-        maxFeePerGas: web3.utils.toWei('3', 'gwei'),
-        maxPriorityFeePerGas: web3.utils.toWei('2', 'gwei')
-      });
+      // Prepare EIP-1559 fees
+      let maxFeePerGas, maxPriorityFeePerGas;
+      try {
+        const block = await web3.eth.getBlock("latest");
+        maxFeePerGas = block.baseFeePerGas ? (parseInt(block.baseFeePerGas) * 2).toString() : web3.utils.toWei("3", "gwei");
+        maxPriorityFeePerGas = web3.utils.toWei("2", "gwei");
+        debugLog(`✅ EIP-1559 fees: maxFeePerGas=${maxFeePerGas}, maxPriorityFeePerGas=${maxPriorityFeePerGas}`);
+      } catch (feeErr) {
+        debugLog(`⚠️ EIP-1559 fee setup failed. Falling back to gasPrice: ${feeErr.message}`);
+      }
 
-      debugLog("✅ Claim successful! TX: " + tx.transactionHash);
+      const txParams = {
+        from: account,
+        to: CONTRACT_ADDRESS,
+        data: contract.methods.claim().encodeABI(),
+        gas: gasEstimate,
+        ...(maxFeePerGas && maxPriorityFeePerGas
+          ? { maxFeePerGas, maxPriorityFeePerGas }
+          : { gasPrice: await web3.eth.getGasPrice() })
+      };
+
+      debugLog("📤 Sending transaction...");
+      await web3.eth.sendTransaction(txParams)
+        .on("transactionHash", hash => debugLog(`📨 Tx hash: ${hash}`))
+        .on("receipt", receipt => debugLog(`✅ Claim successful: ${JSON.stringify(receipt)}`))
+        .on("error", err => debugLog(`❌ Claim error: ${err.message || JSON.stringify(err)}`));
+
     } catch (err) {
-      debugLog(`❌ Claim failed: ${err.message || JSON.stringify(err)}`);
+      debugLog(`❌ Fatal error: ${err.message || JSON.stringify(err)}`);
     }
   });
 });
