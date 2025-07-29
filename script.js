@@ -25,7 +25,7 @@ async function waitForEthereum(timeout = 3000) {
     await new Promise(res => setTimeout(res, 50));
   }
   if (!window.ethereum) {
-    throw new Error("No Ethereum provider detected. Please open in MetaMask/Base Wallet.");
+    throw new Error("No Ethereum provider found. Open in MetaMask/Base Wallet.");
   }
 }
 
@@ -40,7 +40,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     logStatus("Ethereum provider ready.");
   } catch (err) {
     logStatus("Ethereum provider not found.");
-    console.error(err);
     return;
   }
 
@@ -49,16 +48,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
       account = accounts[0];
       logStatus(`Connected: ${account}`);
+
+      // Diagnostic: log network
+      const chainId = await web3.eth.getChainId();
+      logStatus(`Chain ID: ${chainId}`);
+
       claimButton.disabled = false;
     } catch (err) {
       logStatus("Wallet connection failed.");
-      console.error("Connection error:", err);
     }
   };
 
   claimButton.onclick = async () => {
     if (!account) {
-      logStatus("Please connect your wallet first.");
+      logStatus("Please connect wallet first.");
       return;
     }
 
@@ -66,33 +69,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     logStatus("Checking claim eligibility...");
 
     try {
-      // 🔍 Call first to check eligibility without spending gas
+      // Pre-check without spending gas
       await contract.methods.claim().call({ from: account });
-      logStatus("Eligible to claim. Sending transaction...");
+      logStatus("Eligible. Preparing transaction...");
 
-      let gas;
-      try {
-        gas = await contract.methods.claim().estimateGas({ from: account });
-      } catch (err) {
-        gas = 200000;
-        logStatus("Gas estimate failed. Using fallback.");
-        console.warn("Gas estimate failed:", err);
-      }
+      // Fixed gas & fees for mobile
+      const txParams = {
+        from: account,
+        to: contractAddress,
+        gas: 250000, // safe limit
+        maxFeePerGas: web3.utils.toWei('30', 'gwei'),
+        maxPriorityFeePerGas: web3.utils.toWei('2', 'gwei'),
+        data: contract.methods.claim().encodeABI()
+      };
 
-      let txParams = { from: account, gas };
-      try {
-        const block = await web3.eth.getBlock("latest");
-        if (block.baseFeePerGas) {
-          txParams.maxFeePerGas = (BigInt(block.baseFeePerGas) * 2n).toString();
-          txParams.maxPriorityFeePerGas = web3.utils.toWei("2", "gwei");
-        } else {
-          txParams.gasPrice = await web3.eth.getGasPrice();
-        }
-      } catch (feeErr) {
-        txParams.gasPrice = await web3.eth.getGasPrice();
-      }
+      // Diagnostic: log the exact tx object
+      console.log("TX Params:", txParams);
+      logStatus("Sending transaction...");
 
-      await contract.methods.claim().send(txParams)
+      await web3.eth.sendTransaction(txParams)
         .on("transactionHash", hash => {
           logStatus(`Transaction sent: ${hash}`);
         })
@@ -100,12 +95,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           logStatus("✅ Claim successful!");
         })
         .on("error", err => {
-          logStatus(`❌ Claim failed: ${err.message || err}`);
+          logStatus(`❌ Claim failed: ${err.message}`);
         });
 
-    } catch (callError) {
-      logStatus("🚫 Already claimed or not eligible.");
-      console.warn("Claim eligibility check failed:", callError);
+    } catch (err) {
+      logStatus(`🚫 Cannot claim: ${err.message}`);
     } finally {
       claimButton.disabled = false;
     }
