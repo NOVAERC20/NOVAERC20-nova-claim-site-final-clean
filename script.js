@@ -1,4 +1,8 @@
 let account;
+let web3;
+let contract;
+const contractAddress = "0xF94AF881E98B63FF51af70869907672eb4CC37a9";
+const abi = [ /* ... your contract ABI here ... */ ];
 
 async function waitForEthereum(timeout = 3000) {
   const started = Date.now();
@@ -15,44 +19,79 @@ document.addEventListener("DOMContentLoaded", async () => {
   const claimButton = document.getElementById("claimButton");
   const status = document.getElementById("status");
 
+  try {
+    await waitForEthereum();
+    web3 = new Web3(window.ethereum);
+    contract = new web3.eth.Contract(abi, contractAddress);
+  } catch (err) {
+    status.textContent = "Ethereum provider not found.";
+    console.error(err);
+    return;
+  }
+
   connectWalletButton.onclick = async () => {
     try {
-      await waitForEthereum();
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
       account = accounts[0];
       status.textContent = "Connected: " + account;
       claimButton.disabled = false;
     } catch (err) {
       status.textContent = "Wallet connection failed.";
+      console.error(err);
     }
   };
 
   claimButton.onclick = async () => {
-    if (!account) return;
+    if (!account) {
+      status.textContent = "Please connect your wallet first.";
+      return;
+    }
+
+    claimButton.disabled = true;
+    status.textContent = "Processing claim...";
+
     try {
-      const web3 = new Web3(window.ethereum);
-      const contract = new web3.eth.Contract(abi, "0xF94AF881E98B63FF51af70869907672eb4CC37a9");
       let gas;
       try {
         gas = await contract.methods.claim().estimateGas({ from: account });
-      } catch (e) {
+      } catch (err) {
         gas = 200000;
         status.textContent = "Gas estimate failed. Using fallback.";
+        console.warn("Gas estimate failed:", err);
       }
 
-      // EIP-1559 parameters as per Copilot suggestion
-      const maxFeePerGas = web3.utils.toWei('30', 'gwei');
-      const maxPriorityFeePerGas = web3.utils.toWei('2', 'gwei');
+      let txParams = { from: account, gas, to: contractAddress, data: contract.methods.claim().encodeABI() };
+      try {
+        const feeData = await web3.eth.getBlock("latest");
+        if (feeData.baseFeePerGas) {
+          // Use BigInt for gas calculations
+          txParams.maxFeePerGas = (BigInt(feeData.baseFeePerGas) * 2n).toString();
+          txParams.maxPriorityFeePerGas = web3.utils.toWei("1.5", "gwei");
+        } else {
+          txParams.gasPrice = await web3.eth.getGasPrice();
+        }
+      } catch (e) {
+        txParams.gasPrice = await web3.eth.getGasPrice();
+        console.warn("EIP-1559 fee fields error, fallback to gasPrice", e);
+      }
 
-      await contract.methods.claim().send({
-        from: account,
-        gas,
-        maxFeePerGas,
-        maxPriorityFeePerGas
-      });
-      status.textContent = "Claim successful!";
+      await web3.eth.sendTransaction(txParams)
+        .on("transactionHash", hash => {
+          status.textContent = "Transaction sent: " + hash;
+        })
+        .on("receipt", receipt => {
+          status.textContent = "Claim successful!";
+        })
+        .on("error", err => {
+          status.textContent = "Claim failed: " + (err.message || err);
+          console.error(err);
+        });
+
     } catch (err) {
-      status.textContent = "Claim failed: " + (err.message || err);
+      status.textContent = "Error: " + (err.message || err);
+      console.error(err);
+    } finally {
+      claimButton.disabled = false;
     }
   };
 });
