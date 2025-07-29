@@ -2,7 +2,7 @@ let account;
 let web3;
 let contract;
 
-const CONTRACT_ADDRESS = "0xF94AF881E98B63FF51af70869907672eb4CC37a9"; // NOVA Claim Contract
+const CONTRACT_ADDRESS = "0xF94AF881E98B63FF51af70869907672eb4CC37a9";
 const abi = [
   {
     "inputs": [],
@@ -20,7 +20,7 @@ function debugLog(msg) {
 }
 
 window.addEventListener('load', () => {
-  debugLog("🌐 Page loaded.");
+  debugLog("🌐 Page loaded. Waiting for wallet...");
 
   document.getElementById("connectWalletButton").addEventListener("click", async () => {
     debugLog("🔍 Connect clicked.");
@@ -47,17 +47,19 @@ window.addEventListener('load', () => {
       debugLog("📄 Contract ready.");
 
       document.getElementById("claimButton").disabled = false;
+
+      // 🔥 Only attach claim logic AFTER connect works
+      attachClaimLogic();
+
     } catch (err) {
       debugLog(`❌ Connect error: ${err.message}`);
     }
   });
+});
 
+// Function defined only after connect works
+function attachClaimLogic() {
   document.getElementById("claimButton").addEventListener("click", async () => {
-    if (!contract || !account) {
-      debugLog("⚠️ Wallet not connected.");
-      return;
-    }
-
     debugLog("🚀 Claim clicked.");
 
     try {
@@ -70,27 +72,20 @@ window.addEventListener('load', () => {
         debugLog(`⚠️ Gas estimate failed, fallback: ${err.message}`);
       }
 
-      // EIP-1559 fees inside claim only
-      let maxFeePerGas, maxPriorityFeePerGas;
-      try {
-        const block = await web3.eth.getBlock("latest");
-        maxFeePerGas = block.baseFeePerGas 
-          ? (parseInt(block.baseFeePerGas) * 2).toString() 
-          : web3.utils.toWei("3", "gwei");
-        maxPriorityFeePerGas = web3.utils.toWei("2", "gwei");
-        debugLog(`✅ Fees: maxFeePerGas=${maxFeePerGas}, maxPriorityFeePerGas=${maxPriorityFeePerGas}`);
-      } catch (feeErr) {
-        debugLog(`⚠️ Fee fetch failed: ${feeErr.message}`);
-      }
+      const block = await web3.eth.getBlock("latest");
+      const maxFeePerGas = block.baseFeePerGas 
+        ? (parseInt(block.baseFeePerGas) * 2).toString()
+        : web3.utils.toWei("3", "gwei");
+      const maxPriorityFeePerGas = web3.utils.toWei("2", "gwei");
+      debugLog(`✅ Fees: maxFeePerGas=${maxFeePerGas}, maxPriorityFeePerGas=${maxPriorityFeePerGas}`);
 
       const txParams = {
         from: account,
         to: CONTRACT_ADDRESS,
         data: contract.methods.claim().encodeABI(),
         gas,
-        ...(maxFeePerGas && maxPriorityFeePerGas
-          ? { maxFeePerGas, maxPriorityFeePerGas }
-          : { gasPrice: await web3.eth.getGasPrice() })
+        maxFeePerGas,
+        maxPriorityFeePerGas
       };
 
       debugLog("📤 Sending TX...");
@@ -103,4 +98,6 @@ window.addEventListener('load', () => {
       debugLog(`❌ Claim error: ${err.message}`);
     }
   });
-});
+
+  debugLog("⚡ Claim logic attached after connect.");
+}
