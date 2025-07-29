@@ -1,30 +1,45 @@
 let account;
 let web3;
 let contract;
+
 const contractAddress = "0xF94AF881E98B63FF51af70869907672eb4CC37a9";
-const abi = [ /* ... your contract ABI here ... */ ];
+const abi = [
+  {
+    "inputs": [],
+    "name": "claim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];
+
+function logStatus(message) {
+  console.log(message);
+  const status = document.getElementById("status");
+  if (status) status.textContent = message;
+}
 
 async function waitForEthereum(timeout = 3000) {
-  const started = Date.now();
-  while (!window.ethereum && Date.now() - started < timeout) {
+  const start = Date.now();
+  while (!window.ethereum && Date.now() - start < timeout) {
     await new Promise(res => setTimeout(res, 50));
   }
   if (!window.ethereum) {
-    throw new Error("Ethereum provider not found. Please open in MetaMask/Base.");
+    throw new Error("No Ethereum provider detected. Please open in MetaMask/Base Wallet.");
   }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
   const connectWalletButton = document.getElementById("connectWalletButton");
   const claimButton = document.getElementById("claimButton");
-  const status = document.getElementById("status");
 
   try {
     await waitForEthereum();
     web3 = new Web3(window.ethereum);
     contract = new web3.eth.Contract(abi, contractAddress);
+    logStatus("Ethereum provider ready.");
   } catch (err) {
-    status.textContent = "No Ethereum wallet detected.";
+    logStatus("Ethereum provider not found.");
     console.error(err);
     return;
   }
@@ -33,31 +48,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
       account = accounts[0];
-      status.textContent = `Connected: ${account}`;
+      logStatus(`Connected: ${account}`);
       claimButton.disabled = false;
     } catch (err) {
-      status.textContent = "Wallet connection failed.";
+      logStatus("Wallet connection failed.");
       console.error("Connection error:", err);
     }
   };
 
   claimButton.onclick = async () => {
     if (!account) {
-      status.textContent = "Connect your wallet first.";
+      logStatus("Please connect your wallet first.");
       return;
     }
 
     claimButton.disabled = true;
-    status.textContent = "Processing claim...";
+    logStatus("Checking claim eligibility...");
 
     try {
+      // 🔍 Call first to check eligibility without spending gas
+      await contract.methods.claim().call({ from: account });
+      logStatus("Eligible to claim. Sending transaction...");
+
       let gas;
       try {
         gas = await contract.methods.claim().estimateGas({ from: account });
       } catch (err) {
         gas = 200000;
+        logStatus("Gas estimate failed. Using fallback.");
         console.warn("Gas estimate failed:", err);
-        status.textContent = "Gas estimate failed. Using fallback.";
       }
 
       let txParams = { from: account, gas };
@@ -70,25 +89,23 @@ document.addEventListener("DOMContentLoaded", async () => {
           txParams.gasPrice = await web3.eth.getGasPrice();
         }
       } catch (feeErr) {
-        console.warn("EIP-1559 fee fetch failed:", feeErr);
         txParams.gasPrice = await web3.eth.getGasPrice();
       }
 
       await contract.methods.claim().send(txParams)
         .on("transactionHash", hash => {
-          status.textContent = `Transaction sent: ${hash}`;
+          logStatus(`Transaction sent: ${hash}`);
         })
         .on("receipt", receipt => {
-          status.textContent = "✅ Claim successful!";
+          logStatus("✅ Claim successful!");
         })
         .on("error", err => {
-          status.textContent = `❌ Claim failed: ${err.message || err}`;
-          console.error("Claim error:", err);
+          logStatus(`❌ Claim failed: ${err.message || err}`);
         });
 
-    } catch (err) {
-      status.textContent = `Error: ${err.message || err}`;
-      console.error("General error:", err);
+    } catch (callError) {
+      logStatus("🚫 Already claimed or not eligible.");
+      console.warn("Claim eligibility check failed:", callError);
     } finally {
       claimButton.disabled = false;
     }
