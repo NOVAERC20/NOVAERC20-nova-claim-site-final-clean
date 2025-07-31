@@ -1,6 +1,6 @@
 // ====== CONFIG ======
 const contractAddress = "0xe3d931336f6528246349f9ce6db6F7e20C0c58b8";
-const contractABI = []; // <-- Your original ABI here
+const contractABI = []; // <-- Your ABI here
 
 let web3;
 let contract;
@@ -22,24 +22,32 @@ async function connectWallet() {
             alert("MetaMask connection failed");
         }
     } else {
-        // ----- WalletConnect v2 -----
+        // ----- WalletConnect v2 (fixed init sequence) -----
         try {
-            const provider = await WalletConnectEthereumProvider.init({
-                projectId: "nDq2YkJGv8vP2WQh4n3x1z4s7Rk9JxBv", // Replace with your WalletConnect Project ID
+            const provider = await window.WalletConnectEthereumProvider.init({
+                projectId: "9aa4a3d7bbf3e9f7f8f2b7d7c2cbb9ab", // Example projectId, replace with yours
                 chains: [1], // Ethereum Mainnet
-                rpcMap: {
+                rpc: {
                     1: "https://mainnet.infura.io/v3/c0a68b8e226b4ffda0e803e6aad70cc1"
                 },
-                showQrModal: true
+                showQrModal: true,
+                methods: ["eth_sendTransaction", "personal_sign", "eth_signTypedData"]
             });
+
             await provider.connect();
             web3 = new Web3(provider);
             const accounts = await web3.eth.getAccounts();
             selectedAccount = accounts[0];
             contract = new web3.eth.Contract(contractABI, contractAddress);
             console.log("Connected via WalletConnect v2:", selectedAccount);
+
+            // Auto-handle disconnect
+            provider.on("disconnect", () => {
+                console.log("WalletConnect disconnected");
+            });
+
         } catch (err) {
-            console.error(err);
+            console.error("WalletConnect connection failed:", err);
             alert("WalletConnect connection failed");
         }
     }
