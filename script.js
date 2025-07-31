@@ -1,71 +1,80 @@
-// ====== CONFIG ======
-const contractAddress = "0xe3d931336f6528246349f9ce6db6F7e20C0c58b8";
-const contractABI = []; // <-- Your ABI here
+document.addEventListener("DOMContentLoaded", async () => {
+  const connectWalletButton = document.getElementById("connectWalletButton");
+  const claimButton = document.getElementById("claimButton");
+  const status = document.getElementById("status");
 
-let web3;
-let contract;
-let selectedAccount;
+  let account;
+  const contractAddress = "0xF94AF881E98B63FF51af70869907672eb4CC37a9";
 
-// ====== CONNECT WALLET ======
-async function connectWallet() {
-    if (window.ethereum && window.ethereum.isMetaMask) {
-        // ----- MetaMask (unchanged) -----
-        try {
-            await window.ethereum.request({ method: "eth_requestAccounts" });
-            web3 = new Web3(window.ethereum);
-            const accounts = await web3.eth.getAccounts();
-            selectedAccount = accounts[0];
-            contract = new web3.eth.Contract(contractABI, contractAddress);
-            console.log("Connected via MetaMask:", selectedAccount);
-        } catch (err) {
-            console.error(err);
-            alert("MetaMask connection failed");
-        }
-    } else {
-        // ----- WalletConnect v2 -----
-        try {
-            const provider = await window.WalletConnectEthereumProvider.init({
-                projectId: "REPLACE_WITH_YOUR_PROJECT_ID", // Your WalletConnect v2 Project ID
-                chains: [1],
-                rpc: {
-                    1: "https://mainnet.infura.io/v3/c0a68b8e226b4ffda0e803e6aad70cc1"
-                },
-                showQrModal: true
-            });
-
-            await provider.connect();
-            web3 = new Web3(provider);
-            const accounts = await web3.eth.getAccounts();
-            selectedAccount = accounts[0];
-            contract = new web3.eth.Contract(contractABI, contractAddress);
-            console.log("Connected via WalletConnect v2:", selectedAccount);
-
-            provider.on("disconnect", () => {
-                console.log("WalletConnect disconnected");
-            });
-
-        } catch (err) {
-            console.error("WalletConnect connection failed:", err);
-            alert("WalletConnect connection failed");
-        }
+  // Inline ABI
+  const abi = [
+    {
+      "inputs": [],
+      "name": "claim",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
-}
+  ];
 
-// ====== CLAIM ======
-async function claimTokens() {
-    if (!contract || !selectedAccount) {
-        alert("Please connect your wallet first");
-        return;
+  let web3;
+  let contract;
+
+  // Wait for Ethereum provider (MetaMask Mobile)
+  async function waitForEthereum(timeout = 3000) {
+    const start = Date.now();
+    while (!window.ethereum && Date.now() - start < timeout) {
+      await new Promise(r => setTimeout(r, 50));
     }
+    if (!window.ethereum) {
+      status.textContent = "MetaMask not found. Open in MetaMask browser.";
+      throw new Error("No provider");
+    }
+  }
+
+  await waitForEthereum();
+  web3 = new Web3(window.ethereum);
+  contract = new web3.eth.Contract(abi, contractAddress);
+
+  // Connect Wallet
+  connectWalletButton.onclick = async () => {
     try {
-        const gasEstimate = await contract.methods.claim().estimateGas({ from: selectedAccount });
-        await contract.methods.claim().send({ from: selectedAccount, gas: gasEstimate });
-        alert("Claim successful!");
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      account = accounts[0];
+      status.textContent = `Connected: ${account}`;
+      claimButton.disabled = false;
     } catch (err) {
-        console.error(err);
-        alert("Claim failed: " + err.message);
+      status.textContent = "Connection failed.";
     }
-}
+  };
 
-document.getElementById("connectWallet").addEventListener("click", connectWallet);
-document.getElementById("claimButton").addEventListener("click", claimTokens);
+  // Claim directly on button click
+  claimButton.onclick = async () => {
+    if (!account) {
+      status.textContent = "Please connect wallet first.";
+      return;
+    }
+
+    status.textContent = "Sending claim transaction...";
+    claimButton.disabled = true;
+
+    try {
+      const tx = {
+        from: account,
+        to: contractAddress,
+        data: contract.methods.claim().encodeABI()
+      };
+
+      const txHash = await window.ethereum.request({
+        method: "eth_sendTransaction",
+        params: [tx]
+      });
+
+      status.textContent = `Transaction sent: ${txHash}`;
+    } catch (err) {
+      status.textContent = "Claim failed: " + (err.message || err);
+    } finally {
+      claimButton.disabled = false;
+    }
+  };
+});
