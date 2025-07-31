@@ -1,13 +1,12 @@
 // ====== CONFIG ======
 const contractAddress = "0xe3d931336f6528246349f9ce6db6F7e20C0c58b8";
-const contractABI = []; // <-- Insert actual ABI here
+const contractABI = []; // <-- Insert your working ABI here
 
-// ====== GLOBAL VARIABLES ======
 let web3;
 let contract;
 let selectedAccount;
 
-// ====== CONNECT WALLET FUNCTION ======
+// ====== CONNECT WALLET ======
 async function connectWallet() {
     if (window.ethereum && window.ethereum.isMetaMask) {
         try {
@@ -16,10 +15,10 @@ async function connectWallet() {
             const accounts = await web3.eth.getAccounts();
             selectedAccount = accounts[0];
             contract = new web3.eth.Contract(contractABI, contractAddress);
-            alert("Connected with MetaMask: " + selectedAccount);
+            console.log("Connected via MetaMask:", selectedAccount);
         } catch (err) {
-            alert("MetaMask connection failed");
             console.error(err);
+            alert("MetaMask connection failed");
         }
     } else {
         try {
@@ -33,15 +32,15 @@ async function connectWallet() {
             const accounts = await web3.eth.getAccounts();
             selectedAccount = accounts[0];
             contract = new web3.eth.Contract(contractABI, contractAddress);
-            alert("Connected with WalletConnect: " + selectedAccount);
+            console.log("Connected via WalletConnect:", selectedAccount);
         } catch (err) {
-            alert("WalletConnect connection failed");
             console.error(err);
+            alert("WalletConnect connection failed");
         }
     }
 }
 
-// ====== CLAIM FUNCTION ======
+// ====== CLAIM ======
 async function claimTokens() {
     if (!contract || !selectedAccount) {
         alert("Please connect your wallet first");
@@ -52,8 +51,8 @@ async function claimTokens() {
         await contract.methods.claim().send({ from: selectedAccount, gas: gasEstimate });
         alert("Claim successful!");
     } catch (err) {
-        alert("Claim failed: " + err.message);
         console.error(err);
+        alert("Claim failed: " + err.message);
     }
 }
 
