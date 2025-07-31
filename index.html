@@ -1,26 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOVA Claim</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-    <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.10.1/dist/umd/index.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA Claim Site</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-<div class="container">
-    <h1>NOVA Claim</h1>
-    <p>Connect your wallet and claim your NOVA tokens.</p>
+  <div class="container">
+    <img src="nova-banner.png" alt="NOVA Banner" />
+    <h3>Phase 0: 1,000 NOVA per claim</h3>
+    <p>Ends after 100,000 coins</p>
 
     <div class="buttons">
-        <button id="connectWalletButton">Connect Wallet</button><br>
-        <button id="claimButton" disabled>Claim NOVA</button>
+      <button id="connectWalletButton">Connect Wallet</button>
+      <button id="claimButton" disabled>Claim</button>
     </div>
-    <div id="status" aria-live="polite"></div>
-</div>
 
-<script src="main.js"></script>
+    <p id="status"></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="abi.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
