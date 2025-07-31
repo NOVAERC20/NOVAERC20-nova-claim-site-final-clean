@@ -1,6 +1,6 @@
 // ====== CONFIG ======
 const contractAddress = "0xe3d931336f6528246349f9ce6db6F7e20C0c58b8";
-const contractABI = []; // <-- Insert your working ABI here
+const contractABI = []; // Use actual ABI here
 
 let web3;
 let contract;
