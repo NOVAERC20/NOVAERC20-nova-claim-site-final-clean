@@ -4,64 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOVA Claim</title>
-    
-    <!-- Web3 & WalletConnect -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.10.1/dist/umd/index.min.js"></script>
-    
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #fdfbf6;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-        .container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        p {
-            color: #555;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            margin: 10px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        #connectWalletButton {
-            background: #007bff;
-            color: white;
-        }
-        #connectWalletButton:hover {
-            background: #0056b3;
-        }
-        #claimButton {
-            background: #bbb;
-            color: #222;
-        }
-        #claimButton:enabled {
-            background: #007bff;
-            color: white;
-        }
-        #claimButton:hover:enabled {
-            background: #0056b3;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -69,12 +14,13 @@
     <h1>NOVA Claim</h1>
     <p>Connect your wallet and claim your NOVA tokens.</p>
 
-    <button id="connectWalletButton">Connect Wallet</button><br>
-    <button id="claimButton" disabled>Claim NOVA</button>
+    <div class="buttons">
+        <button id="connectWalletButton">Connect Wallet</button><br>
+        <button id="claimButton" disabled>Claim NOVA</button>
+    </div>
+    <div id="status" aria-live="polite"></div>
 </div>
 
-<!-- Script -->
-<script src="script.js"></script>
-
+<script src="main.js"></script>
 </body>
 </html>
