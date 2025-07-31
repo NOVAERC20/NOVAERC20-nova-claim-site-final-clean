@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOVA Claim</title>
+    
+    <!-- Web3 & WalletConnect -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
     <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.10.1/dist/umd/index.min.js"></script>
+    
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f5f5f5;
+            background: #fdfbf6;
             margin: 0;
             padding: 0;
             text-align: center;
@@ -40,19 +43,23 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        #connectWallet {
+        #connectWalletButton {
             background: #007bff;
             color: white;
         }
-        #connectWallet:hover {
+        #connectWalletButton:hover {
             background: #0056b3;
         }
         #claimButton {
-            background: #28a745;
+            background: #bbb;
+            color: #222;
+        }
+        #claimButton:enabled {
+            background: #007bff;
             color: white;
         }
-        #claimButton:hover {
-            background: #1e7e34;
+        #claimButton:hover:enabled {
+            background: #0056b3;
         }
     </style>
 </head>
@@ -62,10 +69,11 @@
     <h1>NOVA Claim</h1>
     <p>Connect your wallet and claim your NOVA tokens.</p>
 
-    <button id="connectWallet">Connect Wallet</button><br>
+    <button id="connectWalletButton">Connect Wallet</button><br>
     <button id="claimButton" disabled>Claim NOVA</button>
 </div>
 
+<!-- Script -->
 <script src="script.js"></script>
 
 </body>
