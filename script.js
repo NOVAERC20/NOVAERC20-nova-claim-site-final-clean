@@ -22,16 +22,15 @@ async function connectWallet() {
             alert("MetaMask connection failed");
         }
     } else {
-        // ----- WalletConnect v2 (fixed init sequence) -----
+        // ----- WalletConnect v2 -----
         try {
             const provider = await window.WalletConnectEthereumProvider.init({
-                projectId: "9aa4a3d7bbf3e9f7f8f2b7d7c2cbb9ab", // Example projectId, replace with yours
-                chains: [1], // Ethereum Mainnet
+                projectId: "nDq2YkJGv8vP2WQh4n3x1z4s7Rk9JxBv", // Your actual WalletConnect v2 Project ID
+                chains: [1],
                 rpc: {
                     1: "https://mainnet.infura.io/v3/c0a68b8e226b4ffda0e803e6aad70cc1"
                 },
-                showQrModal: true,
-                methods: ["eth_sendTransaction", "personal_sign", "eth_signTypedData"]
+                showQrModal: true
             });
 
             await provider.connect();
@@ -41,7 +40,6 @@ async function connectWallet() {
             contract = new web3.eth.Contract(contractABI, contractAddress);
             console.log("Connected via WalletConnect v2:", selectedAccount);
 
-            // Auto-handle disconnect
             provider.on("disconnect", () => {
                 console.log("WalletConnect disconnected");
             });
