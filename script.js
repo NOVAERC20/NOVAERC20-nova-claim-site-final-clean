@@ -25,7 +25,7 @@ async function connectWallet() {
         // ----- WalletConnect v2 -----
         try {
             const provider = await window.WalletConnectEthereumProvider.init({
-                projectId: "nDq2YkJGv8vP2WQh4n3x1z4s7Rk9JxBv", // Your actual WalletConnect v2 Project ID
+                projectId: "REPLACE_WITH_YOUR_PROJECT_ID", // Your WalletConnect v2 Project ID
                 chains: [1],
                 rpc: {
                     1: "https://mainnet.infura.io/v3/c0a68b8e226b4ffda0e803e6aad70cc1"
