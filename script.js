@@ -1,6 +1,6 @@
 // ====== CONFIG ======
 const contractAddress = "0xe3d931336f6528246349f9ce6db6F7e20C0c58b8";
-const contractABI = []; // Insert your working ABI here
+const contractABI = []; // <-- Your original ABI here
 
 let web3;
 let contract;
@@ -9,6 +9,7 @@ let selectedAccount;
 // ====== CONNECT WALLET ======
 async function connectWallet() {
     if (window.ethereum && window.ethereum.isMetaMask) {
+        // ----- MetaMask (unchanged) -----
         try {
             await window.ethereum.request({ method: "eth_requestAccounts" });
             web3 = new Web3(window.ethereum);
@@ -21,10 +22,11 @@ async function connectWallet() {
             alert("MetaMask connection failed");
         }
     } else {
+        // ----- WalletConnect v2 -----
         try {
             const provider = await WalletConnectEthereumProvider.init({
-                projectId: "nDq2YkJGv8vP2WQh4n3x1z4s7Rk9JxBv", // Replace with your WalletConnect v2 Project ID if needed
-                chains: [1],
+                projectId: "nDq2YkJGv8vP2WQh4n3x1z4s7Rk9JxBv", // Replace with your WalletConnect Project ID
+                chains: [1], // Ethereum Mainnet
                 rpcMap: {
                     1: "https://mainnet.infura.io/v3/c0a68b8e226b4ffda0e803e6aad70cc1"
                 },
