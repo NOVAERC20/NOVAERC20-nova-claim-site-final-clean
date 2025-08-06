@@ -39,7 +39,7 @@ claimButton.addEventListener("click", async () => {
   const contract = new web3.eth.Contract(abi, contractAddress);
 
   try {
-    await contract.methods.claim().send({ from: account });
+    await contract.methods.claim().send({ from: account, gas: 200000 }); // ✅ Safe gas limit
     status.textContent = "Claim successful!";
   } catch (err) {
     status.textContent = "Claim failed.";
