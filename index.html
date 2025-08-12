@@ -1,26 +1,95 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NOVA Claim Site</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div class="container">
-    <img src="nova-banner.png" alt="NOVA Banner" />
-    <h3>Phase 0: 1,000 NOVA per claim</h3>
-    <p>Ends after 100,000 coins</p>
+<!-- index.html stays the same -->
+<script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+<script>
+const connectWalletButton = document.getElementById("connectWalletButton");
+const claimButton = document.getElementById("claimButton");
+const statusEl = document.getElementById("status");
 
-    <div class="buttons">
-      <button id="connectWalletButton">Connect Wallet</button>
-      <button id="claimButton" disabled>Claim</button>
-    </div>
+let web3, account;
 
-    <p id="status"></p>
-  </div>
+const abi = [
+  { "inputs": [], "name": "claim", "outputs": [], "stateMutability": "nonpayable", "type": "function" }
+  // If your contract exposes a read like: claimed(address) -> bool, add it:
+  // { "inputs":[{"internalType":"address","name":"","type":"address"}], "name":"claimed", "outputs":[{"internalType":"bool","name":"","type":"bool"}], "stateMutability":"view", "type":"function" }
+];
 
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
+const contractAddress = "0xF94AF881E98B63FF51af70869907672eb4CC37a9";
+
+function setStatus(msg){ statusEl.textContent = msg || ""; }
+
+async function ensureMainnet() {
+  const chainId = await window.ethereum.request({ method: "eth_chainId" });
+  if (chainId !== "0x1") {
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x1" }],
+      });
+      return true;
+    } catch (e) {
+      setStatus("Please switch network to Ethereum Mainnet.");
+      return false;
+    }
+  }
+  return true;
+}
+
+connectWalletButton.addEventListener("click", async () => {
+  if (!window.ethereum) return setStatus("MetaMask / EVM wallet not found.");
+
+  if (!(await ensureMainnet())) return;
+
+  try {
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    account = accounts[0];
+    web3 = new Web3(window.ethereum);
+    setStatus(`Connected: ${account}`);
+    claimButton.disabled = false;
+  } catch {
+    setStatus("Connection rejected.");
+  }
+});
+
+claimButton.addEventListener("click", async () => {
+  if (!account) return setStatus("Please connect your wallet first.");
+  if (!(await ensureMainnet())) return;
+
+  const contract = new web3.eth.Contract(abi, contractAddress);
+
+  // Optional pre-check if your contract exposes claimed(address) -> bool
+  // try {
+  //   const already = await contract.methods.claimed(account).call();
+  //   if (already) {
+  //     claimButton.disabled = true;
+  //     return setStatus("You’ve already claimed NOVA with this wallet.");
+  //   }
+  // } catch {}
+
+  claimButton.disabled = true;
+  setStatus("Sending claim transaction…");
+
+  try {
+    let gas;
+    try {
+      gas = await contract.methods.claim().estimateGas({ from: account });
+      gas = Math.floor(gas * 1.2);
+    } catch { gas = 200000; }
+
+    const receipt = await contract.methods.claim().send({ from: account, gas });
+    setStatus(`Claim successful! Tx: ${receipt.transactionHash}`);
+    claimButton.disabled = true;
+  } catch (err) {
+    const msg = (err?.message || "").toLowerCase();
+    if (msg.includes("already") || msg.includes("claimed")) {
+      setStatus("You’ve already claimed NOVA with this wallet.");
+      claimButton.disabled = true;
+    } else if (msg.includes("insufficient funds")) {
+      setStatus("Not enough ETH for gas on mainnet.");
+      claimButton.disabled = false;
+    } else {
+      setStatus("Claim failed. Check network (Mainnet) and try again.");
+      claimButton.disabled = false;
+    }
+  }
+});
+</script>
