@@ -1,74 +1,52 @@
-body {
-  font-family: Arial, sans-serif;
-  background-color: #fdfbf6; /* Your cream tone */
-  text-align: center;
-  padding: 20px;
-  margin: 0;
+:root{
+  --bg:#fdfbf6;
+  --ink:#0f1720;
+  --muted:#5b6672;
+  --panel:#ffffff;
+  --accent:#0b66ff;
+  --line:#ececec;
+  --shadow:0 8px 28px rgba(0,0,0,.06);
 }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
 
-.container {
-  max-width: 600px;
-  margin: 0 auto;
+.header{
+  position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 14px;
 }
+.brand{font-weight:800;text-decoration:none;color:var(--ink);letter-spacing:.2px}
+.nav{display:none;gap:14px}
+.nav a{text-decoration:none;color:var(--muted)}
+.nav a:hover{text-decoration:underline}
 
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto 20px auto;
+.hamburger{
+  width:40px;height:32px;border:0;background:transparent;display:grid;gap:4px;cursor:pointer;
 }
+.hamburger span{display:block;height:3px;background:var(--ink);border-radius:2px}
 
-h1 {
-  font-size: 2.5rem;
-  margin: 0.5em 0 0.2em;
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px}
+.hero{width:100%;height:auto;display:block;margin:6px auto 20px}
+.section{margin:18px 0}
+.section h1{font-size:clamp(24px,5vw,40px);margin:6px 0 6px}
+.section h2{font-size:clamp(20px,4.5vw,28px);margin:8px 0}
+.muted{color:var(--muted);font-size:14px}
+
+.cards{display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+  text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:transform .08s ease;
 }
+.card:hover{transform:translateY(-1px)}
+.ads{display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px}
+.ad{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
 
-h2 {
-  font-size: 1.5rem;
-  margin: 0.2em 0;
-  font-weight: 500;
-}
+.footer{border-top:1px solid var(--line);padding:18px 16px;text-align:center;color:var(--muted);font-size:14px}
 
-p {
-  font-size: 1.1rem;
-  margin: 0.5em 0;
-}
-
-h3 {
-  font-size: 1.2rem;
-  margin-top: 1em;
-  font-weight: 600;
-}
-
-.buttons {
-  margin-top: 30px;
-}
-
-button {
-  padding: 12px 20px;
-  font-size: 1rem;
-  margin: 0 10px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-#connectWallet {
-  background-color: #007bff;
-  color: white;
-}
-
-#claimButton {
-  background-color: #ccc;
-  color: white;
-}
-
-#claimButton:enabled {
-  background-color: #007bff;
-}
-
-#status {
-  margin-top: 20px;
-  font-size: 1rem;
-  color: #333;
+/* Desktop */
+@media (min-width:760px){
+  .nav{display:flex}
+  .hamburger{display:none}
+  .cards,.ads{grid-template-columns:repeat(2,1fr)}
 }

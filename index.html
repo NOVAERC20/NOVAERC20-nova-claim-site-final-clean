@@ -1,26 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NOVA Claim Site</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NOVA ERC — Official Hub</title>
+  <meta name="description" content="NOVA ERC — official hub. Claims live only on claimnova.xyz and claimprima.xyz."/>
+  <link rel="preload" as="image" href="/nova-banner.png"/>
+  <link rel="stylesheet" href="/style.css"/>
 </head>
 <body>
-  <div class="container">
-    <img src="nova-banner.png" alt="NOVA Banner" />
-    <h3>Phase 0: 1,000 NOVA per claim</h3>
-    <p>Ends after 100,000 coins</p>
+  <header class="header">
+    <a class="brand" href="/">NOVA ERC</a>
 
-    <div class="buttons">
-      <button id="connectWalletButton">Connect Wallet</button>
-      <button id="claimButton" disabled>Claim</button>
-    </div>
+    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="nav">
+      <span></span><span></span><span></span>
+    </button>
 
-    <p id="status"></p>
-  </div>
+    <nav id="nav" class="nav">
+      <a href="#about">About</a>
+      <a href="#links">Official Links</a>
+      <a href="#announcements">Announcements</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </header>
 
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <script src="script.js"></script>
+  <main class="wrap">
+    <img class="hero" src="/nova-banner.png" alt="NOVA banner"/>
+
+    <section id="about" class="section">
+      <h1>NOVA ERC</h1>
+      <p>This is the official information hub. <strong>Claims do not happen here.</strong> Use the official claim portals below.</p>
+    </section>
+
+    <section id="links" class="section">
+      <h2>Official Claim Portals</h2>
+      <div class="cards">
+        <a class="card" href="https://claimnova.xyz" target="_blank" rel="noopener">Claim NOVA →</a>
+        <a class="card" href="https://claimprima.xyz" target="_blank" rel="noopener">Claim PRIMA →</a>
+      </div>
+      <p class="muted">Standard Base network fee applies. NovaERC.com never asks to connect your wallet.</p>
+    </section>
+
+    <section id="announcements" class="section">
+      <h2>Announcements</h2>
+      <div class="ads">
+        <article class="ad">
+          <h3>VOLT (Coming Soon)</h3>
+          <p>Same clean claim flow on Base. Launch date will be announced here.</p>
+        </article>
+        <article class="ad">
+          <h3>Proof-of-Burn Vault (Preview)</h3>
+          <p>A transparent vault page to showcase burns and supply updates.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="faq" class="section">
+      <h2>FAQ</h2>
+      <details>
+        <summary>Why can’t I claim on NovaERC.com?</summary>
+        <p>For safety and simplicity. All claiming is handled by dedicated portals: claimnova.xyz and claimprima.xyz.</p>
+      </details>
+      <details>
+        <summary>Which network?</summary>
+        <p>Base mainnet (chain 8453). The claim sites handle the rest.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small>© <span id="year"></span> NOVA ERC — Only the links above are official.</small>
+  </footer>
+
+  <script src="/menu.js"></script>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
