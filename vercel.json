@@ -1,8 +1,0 @@
-{
-  "redirects": [
-    { "source": "/claim",  "destination": "https://claimnova.xyz",  "permanent": true },
-    { "source": "/nova",   "destination": "https://claimnova.xyz",  "permanent": true },
-    { "source": "/prima",  "destination": "https://claimprima.xyz", "permanent": true }
-  ],
-  "cleanUrls": true
-}
