@@ -29,8 +29,6 @@ connectWalletButton.addEventListener("click", async () => {
 
     const web3 = new Web3(window.ethereum);
     const networkId = await web3.eth.net.getId();
-    console.log("Network ID:", networkId);
-
     if (networkId !== 1) {
       status.textContent = "⚠️ Please switch to Ethereum Mainnet.";
       claimButton.disabled = true;
@@ -39,7 +37,7 @@ connectWalletButton.addEventListener("click", async () => {
 
     claimButton.disabled = false;
   } catch (err) {
-    console.error("Wallet connection failed:", err);
+    console.error("Connection failed:", err);
     status.textContent = "❌ Connection failed.";
   }
 });
@@ -54,16 +52,23 @@ claimButton.addEventListener("click", async () => {
   const contract = new web3.eth.Contract(abi, contractAddress);
 
   try {
+    status.textContent = "⏳ Estimating gas...";
+    const estimatedGas = await contract.methods.claim().estimateGas({ from: account });
+
     status.textContent = "⏳ Sending claim transaction...";
-    console.log("Calling claim() from:", account);
-    await contract.methods.claim().send({ from: account, gas: 200000 });
+    await contract.methods.claim().send({ from: account, gas: estimatedGas + 5000 });
+
     status.textContent = "✅ Claim successful!";
   } catch (err) {
     console.error("Claim failed:", err);
-    if (err.message) {
-      status.textContent = `❌ Claim failed: ${err.message}`;
+    if (err.message?.includes("already claimed")) {
+      status.textContent = "⚠️ You already claimed.";
+    } else if (err.message?.includes("ClaimingDisabled")) {
+      status.textContent = "⚠️ Claiming is currently disabled.";
+    } else if (err.code === 4001) {
+      status.textContent = "❌ Transaction rejected.";
     } else {
-      status.textContent = "❌ Claim failed. Check console.";
+      status.textContent = "❌ Claim failed. See console.";
     }
   }
 });
