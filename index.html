@@ -3,31 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NOVA ERC</title>
+  <title>NOVA Claim Site</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <img src="nova-banner.png" alt="NOVA Banner" class="banner" />
+    <img src="nova-banner.png" alt="NOVA Banner" />
+    <h3>Phase 0: 1,000 NOVA per claim</h3>
+    <p>Ends after 100,000 coins</p>
 
-    <h1 class="hero">Digital coins owned by everyone.</h1>
-
-    <div class="button-row">
-      <div class="button-box">
-        <a href="https://claimnova.xyz" class="button">Claim NOVA</a>
-        <p class="label">L1 — Ethereum Mainnet</p>
-      </div>
-      <div class="button-box">
-        <a href="https://claimprima.xyz" class="button">Claim PRIMA</a>
-        <p class="label">L2 — Base Network</p>
-      </div>
+    <div class="buttons">
+      <button id="connectWalletButton">Connect Wallet</button>
+      <button id="claimButton" disabled>Claim</button>
     </div>
 
-    <div class="burn">
-      <a href="https://etherscan.io/address/0xe3d931336f6528246349f9ce6db6F7e20C0c58b8" target="_blank">
-        🔥 View Burn Wallet (100,000 NOVA)
-      </a>
-    </div>
+    <p id="status">Please connect your wallet.</p>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
